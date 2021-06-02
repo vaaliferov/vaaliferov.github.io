@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Detector</title>
+        <meta name='viewport' content='initial-scale=1, maximum-scale=1'>
+    </head>
+    <body>
+        <script>
+            // var ws = new WebSocket('ws://127.0.0.1:8080/');
+            var ws = new WebSocket('ws://217.25.238.173:8080/');
+            // var ws = new WebSocket('ws://35.193.12.78:8080/');
+            ws.binaryType = 'arraybuffer';
+            ws.onmessage = function(ev) {
+                var arrayBufferView = new Uint8Array(ev.data);
+                var blob = new Blob([arrayBufferView], {type:'image/jpeg'});
+                var url = window.URL || window.webkitURL;
+                var img = document.getElementById('image');
+                img.src = url.createObjectURL(blob);
+            };
+            function detect() {
+                var file = document.getElementById('file').files[0];
+                if (file.type == 'image/jpeg' && file.size < 1e+6) {
+                    var reader = new FileReader();
+                    var rawData = new ArrayBuffer();
+                    reader.onload = function(e) {
+                        var rawData = e.target.result;
+                        var byteArray = new Uint8Array(rawData);
+                        var fileByteArray = [];
+                        ws.send(byteArray.buffer);
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+            }
+        </script>
+        <input type='file' id='file' onchange='detect();' style='display:block'>
+        <img id='image' src='' style='display:block; max-width:100%;'>
+    </body>
+</html>
